@@ -7,6 +7,7 @@ module.exports = {
       extend: {
 	  colors: {
 	      chiggaYellow: "#ffe059",
+	      backgroundColor: "#011121"
 	  },
     },
   },

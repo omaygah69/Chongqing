@@ -1,16 +1,22 @@
-import { Text, View } from "react-native";
+import { Text, View, TouchableOpacity } from "react-native";
+import { Link, useRouter } from "expo-router"
 import "../global.css"
 
-export default function Index() {
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text className="text-chiggaYellow">Edit app/index.tsx to edit this screen.</Text>
-    </View>
-  );
+export default function getStarted(){
+    const router = useRouter();
+    return(
+	<View className="flex-1 bg-backgroundColor items-center justify-center">
+	    <Text className="text-chiggaYellow text-center text-[40px] font-[Cinzel]">GRAPHPIX</Text>
+	    <Text className="text-chiggaYellow text-center mt-24 text-[25px] px-20">Ready to translate some graphs today?</Text>
+
+	    <TouchableOpacity className="bg-yellow-400 px-6 py-3 mt-20 rounded-full w-60 self-center"
+			      onPress={() => router.push("/mainpage")}>
+		<Text className="text-black text-lg font-bold text-center">Get Started</Text>
+	    </TouchableOpacity>
+
+	    <Link className="text-chiggaYellow text-center p-25 pt-10" href="/mainpage">Learn More</Link>
+	</View>
+    )
 }
+
+
