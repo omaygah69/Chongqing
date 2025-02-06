@@ -1,44 +1,108 @@
-import { Text, View, TouchableOpacity } from "react-native";
-import { useState } from "react";
-import "../global.css"
+import { Feather } from "@expo/vector-icons";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
+import { useRef, useState } from "react";
+import {
+  Button,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-export default function(){
-    const [ facing, setFacing ] = useState<CameraType>("back");
-    const [ permission, requestPermission ] = useCameraPermissions();
+const Camera = () => {
+  const [facing, setFacing] = useState<CameraType>("back");
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView | any>(null);
+  const [pic, setPic] = useState<any>(null);
+  if (!permission) {
+    // Camera permissions are still loading.
+    return <View />;
+  }
 
-    if(!permission){
-	return <View />
-    }
-
-    if(!permission.granted){
-	return (
-	    <View className="flex-1 justify-center">
-		<Text className="text-center text-xl">We need your permission to use camera.</Text>
-
-		<TouchableOpacity className="bg-yellow-400 px-6 py-3 mt-20 rounded-full w-60 self-center"
-				  onPress={requestPermission}>
-		    <Text className="text-black text-lg font-bold text-center">Grant Permission</Text>
-		</TouchableOpacity>
-
-	    </View>
-	)
-    }
-
-    function toggleCameraFacing() {
-	setFacing(current => (current === 'back' ? 'front' : 'back'));
-    }
-    
+  if (!permission.granted) {
+    // Camera permissions are not granted yet.
     return (
-	<View className="flex-1 w-full h-full">
-            <CameraView className="absolute top-0 left-0 w-full h-full" facing={facing} />
-
-            <View className="absolute bottom-10 left-0 right-0 flex items-center">
-		<TouchableOpacity className="bg-yellow-400 px-8 py-3 rounded-full"
-                                  onPress={toggleCameraFacing}>
-                    <Text className="text-m font-bold text-black text-center">Flip Camera</Text>
-		</TouchableOpacity>
-            </View>
-	</View>
+      <View>
+        <Text>We need your permission to show the camera</Text>
+        <Button onPress={requestPermission} title="grant permission" />
+      </View>
     );
-}
+  }
+
+  function toggleCameraFacing() {
+    setFacing((current) => (current === "back" ? "front" : "back"));
+  }
+  const takePhoto = async () => {
+    if (cameraRef.current) {
+      const options = {
+        quality: 1,
+        base64: true,
+        exif: false,
+        shutterSound: true,
+      };
+      const newPic = await cameraRef.current.takePictureAsync(options);
+      setPic(newPic);
+    }
+  };
+  return (
+    // <View style={styles.container}>
+    //   <CameraView style={styles.camera} facing={facing}>
+    //     <View style={styles.buttonContainer}>
+    //       <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
+    //         <Text style={styles.text}>Flip Camera</Text>
+    //       </TouchableOpacity>
+    //     </View>
+    //   </CameraView>
+    // </View>
+    <>
+      <View className="flex-1 justify-center">
+        <CameraView
+          style={styles.camera}
+          autofocus="on"
+          facing={facing}
+          ref={cameraRef}
+        >
+          <View className="flex-1 items-center justify-end">
+            <TouchableOpacity className="mb-32" onPress={takePhoto}>
+              <Feather name="aperture" color="#ffffff" size={64} />
+            </TouchableOpacity>
+          </View>
+        </CameraView>
+      </View>
+      <StatusBar hidden />
+    </>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  message: {
+    textAlign: "center",
+    paddingBottom: 10,
+  },
+  camera: {
+    flex: 1,
+  },
+  buttonContainer: {
+    flex: 1,
+    flexDirection: "row",
+    backgroundColor: "transparent",
+    margin: 64,
+  },
+  button: {
+    flex: 1,
+    alignSelf: "flex-end",
+    alignItems: "center",
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "white",
+  },
+});
+
+export default Camera;
