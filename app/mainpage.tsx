@@ -4,7 +4,8 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import pagelogo from "@/assets/images/pagelogo.jpeg"
 import "../global.css"
 
-export default function MainPage() {
+export default function MainPage(){
+    const router = useRouter();
     return (
 	<View className="flex-1 bg-backgroundColor">
 	    <View className="absolute top-0 left-0 right-0 h-16 bg-[#020528] flex-row justify-between items-center px-5 pt-6 z-10">
@@ -41,19 +42,20 @@ export default function MainPage() {
                     <Text className="text-[#ffe059] text-[15px] mt-1">Draw</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity className="items-center">
+                <TouchableOpacity className="items-center"
+		onPress={() => router.push("/camera")}>
                     <Ionicons name="camera" size={50} color="#ffe059" />
                     <Text className="text-[#ffe059] text-[15px] mt-1">Scan</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity className="items-center">
                     <MaterialIcons name="translate" size={35} color="#ffe059" />
-                    <Text className="text-[#ffe059] text-[15px] mt-1">Saygex?</Text>
+                    <Text className="text-[#ffe059] text-[15px] mt-1">Translate</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity className="items-center">
                     <MaterialIcons name="arrow-circle-up" size={35} color="#ffe059" />
-                    <Text className="text-[#ffe059] text-[15px] mt-1">Saygex?</Text>
+                    <Text className="text-[#ffe059] text-[15px] mt-1">Import</Text>
                 </TouchableOpacity>
             </View>
 
