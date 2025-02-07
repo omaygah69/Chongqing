@@ -1,3 +1,15 @@
 import pagelogo from "../assets/images/pagelogo.jpeg"
 
-export { pagelogo }
+const burger = [
+    "Sign In",
+    "Save",
+    "History",
+    "Themes",
+    "Notification",
+    "User's Guide",
+    "About",
+    "FAQs",
+    "Contact Us"
+]
+
+export { pagelogo, burger}

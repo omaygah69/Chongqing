@@ -3,6 +3,7 @@ import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { useRef, useState } from "react";
 import { Image } from "react-native";
 import * as FileSystem from "expo-file-system";
+import * as MediaLibrary from "expo-media-library";
 import {
   Button,
   StatusBar,
@@ -57,6 +58,15 @@ const Camera = () => {
       };
       const photo = await cameraRef.current.takePictureAsync(options);
       setPhotoUri(photo);
+      try {
+        const permission = await MediaLibrary.requestPermissionsAsync();
+        if (permission.granted) {
+          await MediaLibrary.createAssetAsync(photo.uri);
+          console.log("Photo saved to gallery");
+        }
+      } catch (error) {
+        console.error("Error saving photo:", error);
+      }
       save();
     }
   };
