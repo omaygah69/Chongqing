@@ -42,6 +42,7 @@ export default function Gallery() {
     setPermissionGranted(true);
     setAlbums(fetchedAlbums);
   }
+  console.log(permissionGranted);
   return (
     <SafeAreaView className="flex justify-center items-center h-full bg-backgroundColor">
       {/* {permissionGranted ? (
@@ -76,7 +77,7 @@ export default function Gallery() {
           <Text className="text-2xl font-semibold">Get Albums</Text>
         </TouchableOpacity>
       )} */}
-      {permissionGranted && (
+      {permissionGranted ? (
         <View className="flex items-center w-full pb-11 h-full">
           <View className="flex items-center w-full">
             <View className="w-full items-end pr-3">
@@ -100,6 +101,13 @@ export default function Gallery() {
               ))}
           </ScrollView>
         </View>
+      ) : (
+        <TouchableOpacity
+          className="bg-chiggaYellow px-6 py-4 rounded-lg"
+          onPress={getAlbums}
+        >
+          <Text className="text-2xl font-semibold">Get Albums</Text>
+        </TouchableOpacity>
       )}
     </SafeAreaView>
   );
