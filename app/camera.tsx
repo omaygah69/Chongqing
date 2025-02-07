@@ -1,6 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { useRef, useState } from "react";
+import { Image } from "react-native";
+import * as FileSystem from "expo-file-system";
 import {
   Button,
   StatusBar,
@@ -13,8 +15,8 @@ import {
 const Camera = () => {
   const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
-  const cameraRef = useRef<CameraView | any>(null);
-  const [pic, setPic] = useState<any>(null);
+  const cameraRef = useRef<any>(null);
+  const [photoUri, setPhotoUri] = useState<any>(null);
   if (!permission) {
     // Camera permissions are still loading.
     return <View />;
@@ -33,6 +35,18 @@ const Camera = () => {
   function toggleCameraFacing() {
     setFacing((current) => (current === "back" ? "front" : "back"));
   }
+  const save = async () => {
+    const appDirectory = FileSystem.documentDirectory + "photos/";
+    await FileSystem.makeDirectoryAsync(appDirectory, { intermediates: true });
+    const photoFileName = photoUri.split("/").pop();
+    const newFilePath = appDirectory + photoFileName;
+
+    // Copy the photo to the new location in the app's directory
+    await FileSystem.copyAsync({
+      from: photoUri,
+      to: newFilePath,
+    });
+  };
   const takePhoto = async () => {
     if (cameraRef.current) {
       const options = {
@@ -41,20 +55,13 @@ const Camera = () => {
         exif: false,
         shutterSound: true,
       };
-      const newPic = await cameraRef.current.takePictureAsync(options);
-      setPic(newPic);
+      const photo = await cameraRef.current.takePictureAsync(options);
+      setPhotoUri(photo);
+      save();
     }
   };
+
   return (
-    // <View style={styles.container}>
-    //   <CameraView style={styles.camera} facing={facing}>
-    //     <View style={styles.buttonContainer}>
-    //       <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-    //         <Text style={styles.text}>Flip Camera</Text>
-    //       </TouchableOpacity>
-    //     </View>
-    //   </CameraView>
-    // </View>
     <>
       <View className="flex-1 justify-center">
         <CameraView
@@ -63,45 +70,27 @@ const Camera = () => {
           facing={facing}
           ref={cameraRef}
         >
-          <View className="flex-1 items-center justify-end">
-            <TouchableOpacity className="mb-32" onPress={takePhoto}>
+          <View className="flex-1 items-center justify-end mb-32">
+            <TouchableOpacity className="" onPress={takePhoto}>
               <Feather name="aperture" color="#ffffff" size={64} />
             </TouchableOpacity>
+            <Text className="text-white">Capture</Text>
           </View>
         </CameraView>
       </View>
+      {photoUri && (
+        <View style={{ marginTop: 20 }}>
+          <Image source={photoUri} style={{ width: 200, height: 200 }} />
+        </View>
+      )}
       <StatusBar hidden />
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  message: {
-    textAlign: "center",
-    paddingBottom: 10,
-  },
   camera: {
     flex: 1,
-  },
-  buttonContainer: {
-    flex: 1,
-    flexDirection: "row",
-    backgroundColor: "transparent",
-    margin: 64,
-  },
-  button: {
-    flex: 1,
-    alignSelf: "flex-end",
-    alignItems: "center",
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "white",
   },
 });
 
