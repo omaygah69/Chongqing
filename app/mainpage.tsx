@@ -2,7 +2,8 @@ import { View, Text, TouchableOpacity, ImageBackground, StyleSheet, StatusBar } 
 import { Link, useRouter } from "expo-router"
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import pagelogo from "../assets/images/pagelogo.jpeg";
-import "../global.css"
+import SettingsMenu from "./settingsMenu";
+import "../global.css";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function MainPage(){
@@ -17,9 +18,11 @@ export default function MainPage(){
 			<Ionicons name="search" size={35} color="#ffe059" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity className="ml-4">
+                    {/* <TouchableOpacity className="ml-4">
 			<Ionicons name="menu" size={35} color="#ffe059" />
-                    </TouchableOpacity>
+			</TouchableOpacity> */}
+
+		    <SettingsMenu/>
 		</View>
             </View>
 	    
