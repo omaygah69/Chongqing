@@ -1,11 +1,12 @@
-import { Text, View, TouchableOpacity } from "react-native";
-import { Link, useRouter } from "expo-router"
-import "../global.css"
+import { Text, View, TouchableOpacity, StatusBar } from "react-native";
+import { Link, useRouter } from "expo-router";
+import "../global.css";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function getStarted(){
     const router = useRouter();
     return(
-	<View className="flex-1 bg-backgroundColor items-center justify-center">
+	<SafeAreaView className="flex-1 bg-backgroundColor items-center justify-center">
 	    <Text className="text-chiggaYellow text-center text-[40px] font-[Cinzel]">GRAPHPIX</Text>
 	    <Text className="text-chiggaYellow text-center mt-24 text-[25px] px-20">Ready to translate some graphs today?</Text>
 
@@ -15,6 +16,7 @@ export default function getStarted(){
 	    </TouchableOpacity>
 
 	    <Link className="text-chiggaYellow text-center p-25 pt-10" href="/mainpage">Learn More</Link>
-	</View>
+	    <StatusBar backgroundColor="#011121" />
+	</SafeAreaView>
     )
 }
