@@ -1,6 +1,8 @@
-import { Text, View, TouchableOpacity, Button, StatusBar, StyleSheet } from "react-native";
+import { Text, View, TouchableOpacity, Button, StatusBar, StyleSheet, Image } from "react-native";
 import { useState, useRef } from "react";
-import { Feather } from "@expo/vector-icons"
+import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native"; 
+import { Feather, MaterialIcons, Entypo } from "@expo/vector-icons";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
@@ -10,7 +12,8 @@ export default function Camera(){
     const [ permission, requestPermission ] = useCameraPermissions();
     const cameraRef = useRef<CameraView | any>(null);
     const [ photoUri, setPhotoUri] = useState<any>(null);
-    
+    const router = useRouter();
+
     if(!permission){
 	return <View />
     }
@@ -25,7 +28,7 @@ export default function Camera(){
     }
 
     function toggleCameraFacing() {
-	setFacing(current => (current === 'back' ? 'front' : 'back'));
+	setFacing(current => (current === "back" ? "front" : "back"));
     }
 
     const save = async () => {
@@ -39,31 +42,27 @@ export default function Camera(){
 	    to: newFilePath,
 	});
     };
-
     const takePhoto = async () => {
 	if (cameraRef.current) {
-	    const options = {
-		quality: 1,
-		base64: true,
-		exif: false,
-		shutterSound: true,
-	    };
-	    const photo = await cameraRef.current.takePictureAsync(options);
-	    setPhotoUri(photo);
+	    const photo = await cameraRef.current.takePictureAsync();
+	    setPhotoUri(photo.uri);
 
 	    try {
-		const permission = await MediaLibrary.requestPermissionAsync()
-		if(!permission.granted){
-		    await MediaLibrary.createAssetAsync(photo.uri)
-		    console.log("Photo saved to gallery")
+		const permission = await MediaLibrary.requestPermissionsAsync();
+		if (permission.granted) {
+		    await MediaLibrary.createAssetAsync(photo.uri);
 		}
+	    } catch (error) {
+		console.log("Error Saving Photo", error);
 	    }
-	    catch (error){
-		console.log("Error Saving Photo", error)
-	    }
-	    save();
+
+	    router.push({
+		pathname: "/ocrscreen",
+		params: { imageUri: photo.uri },
+	    });
 	}
     };
+
 
     return (
 	<>
@@ -74,19 +73,28 @@ export default function Camera(){
 		    facing={facing}
 		    ref={cameraRef}
 		>
-		    <View className="flex-1 items-center justify-end mb-32">
-			<TouchableOpacity className="" onPress={takePhoto}>
-			    <Feather name="aperture" color="#ffffff" size={64} />
-			</TouchableOpacity>
-			<Text className="text-white">Capture</Text>
+		    <View className="flex-1 flex-row pb-20">
+			<View className="flex-1 items-center justify-end">
+			    <TouchableOpacity className="" onPress={() => router.push("/mainpage")}>
+				<Entypo name="back" color="#ffffff" size={50} />
+			    </TouchableOpacity>
+			</View>
+
+			<View className="flex-1 items-center justify-end">
+			    <TouchableOpacity className="" onPress={takePhoto}>
+				<Feather name="aperture" color="#ffffff" size={50} />
+			    </TouchableOpacity>
+			</View>
+
+			<View className="flex-1 items-center justify-end">
+			    <TouchableOpacity className="" onPress={toggleCameraFacing}>
+				<MaterialIcons name="cameraswitch" color="#ffffff" size={50} />
+			    </TouchableOpacity>
+			</View>
 		    </View>
+		    
 		</CameraView>
 	    </View>
-	    {photoUri && (
-		<View style={{ marginTop: 20 }}>
-		    <Image source={photoUri} style={{ width: 200, height: 200 }} />
-		</View>
-	    )}
 	    <StatusBar hidden />
 	</>
     );
@@ -98,5 +106,3 @@ const styles = StyleSheet.create({
 	flex: 1,
     },
 });
-
-

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "681395969591",
+    "project_id": "nahhocr",
+    "storage_bucket": "nahhocr.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:681395969591:android:152fee4456d1007cb629b2",
+        "android_client_info": {
+          "package_name": "com.graphix.nahh"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrbZaQR7dycn41NZgCpsdaXlfqpgR_A1E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

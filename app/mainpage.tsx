@@ -17,11 +17,6 @@ export default function MainPage(){
                     <TouchableOpacity className="ml-4">
 			<Ionicons name="search" size={35} color="#ffe059" />
                     </TouchableOpacity>
-
-                    {/* <TouchableOpacity className="ml-4">
-			<Ionicons name="menu" size={35} color="#ffe059" />
-			</TouchableOpacity> */}
-
 		    <SettingsMenu/>
 		</View>
             </View>
@@ -42,7 +37,8 @@ export default function MainPage(){
                     <Text className="text-[#ffe059] text-[15px] mt-1">Gallery</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity className="items-center">
+                <TouchableOpacity className="items-center"
+		onPress={() => router.push("/draw") }>
                     <Ionicons name="brush" size={35} color="#ffe059" />
                     <Text className="text-[#ffe059] text-[15px] mt-1">Draw</Text>
                 </TouchableOpacity>
