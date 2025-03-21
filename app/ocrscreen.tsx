@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import { View, Text, Image, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 import { useEffect, useState } from "react";
-import vision from "@react-native-firebase/ml-vision";
+import Tesseract from "tesseract.js";
 
 export default function OCRScreen() {
     const { imageUri } = useLocalSearchParams();
@@ -19,12 +19,20 @@ export default function OCRScreen() {
 
 	    try {
 		console.log("Processing image:", imageUri); // Debug log
-		const result = await vision().textRecognizerProcessImage(imageUri);
-		console.log("OCR Result:", result); // Debug log
-		setRecognizedText(result.text || "No text recognized");
+		
+		Tesseract.recognize(
+		    imageUri,
+		    "eng",
+		    {
+			logger: (m) => console.log(m),
+		    }
+		).then( ({ data: {text} }) => {
+		    console.log("OCR Result:", text);
+		    setRecognizedText(text || "No text recognized");
+		});
 	    } catch (error) {
 		console.error("OCR Error:", error);
-		setErrorMessage("Failed to recognize text. Check Firebase setup.");
+		setErrorMessage("Failed To Recognize Text.");
 	    }
 	    setLoading(false);
 	};

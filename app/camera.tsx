@@ -42,6 +42,7 @@ export default function Camera(){
 	    to: newFilePath,
 	});
     };
+    
     const takePhoto = async () => {
 	if (cameraRef.current) {
 	    const photo = await cameraRef.current.takePictureAsync();
