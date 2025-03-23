@@ -1,46 +1,40 @@
-import React, { useState } from "react";
-import { View, Button } from "react-native";
-import { Canvas, Path, Skia } from "@shopify/react-native-skia";
-import { GestureHandlerRootView, PanGestureHandler } from "react-native-gesture-handler";
+import { StatusBar } from "expo-status-bar";
+import React, { useState, useRef } from "react";
+import { StyleSheet, View, Button } from "react-native";
+import ExpoDraw from "expo-draw";
 
-const draw = () => {
-  const [paths, setPaths] = useState([]);
-  const [currentPath, setCurrentPath] = useState("");
+export default function Draw() {
+    const [theColor, setColor] = useState("black");
+    const [theWidth, setWidth] = useState(5);
+    const undoRef = useRef(null);
+    const clearRef = useRef(null);
 
-  const handleTouchMove = (event) => {
-    const { x, y } = event.nativeEvent;
-    setCurrentPath((prevPath) => `${prevPath} ${x},${y}`);
-  };
+    return (
+        <View className="flex-1 bg-backgroundColor items-center justify-center py-10">
+	    <ExpoDraw
+		className="w-full"
+                strokes={[]}
+                containerStyle={{ backgroundColor: "white" }}
+                rewind={(undo) => (undoRef.current = undo)}
+                clear={(clear) => (clearRef.current = clear)}
+                color={theColor}
+                strokeWidth={theWidth}
+                enabled={true}
+                onChangeStrokes={(strokes) => console.log(strokes)}
+	    />
+	    
+            <View style={styles.controls}>
+                <Button title="Undo" onPress={() => undoRef.current && undoRef.current()} />
+                <Button title="Clear" onPress={() => clearRef.current && clearRef.current()} />
+                <Button title="Change Color" onPress={() => setColor(theColor === "black" ? "red" : "black")} />
+            </View>
+        </View>
+    );
+}
 
-  const handleTouchEnd = () => {
-    if (currentPath) {
-      setPaths([...paths, currentPath]);
-      setCurrentPath("");
-    }
-  };
-
-  const clearCanvas = () => {
-    setPaths([]);
-    setCurrentPath("");
-  };
-
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <View style={{ flex: 1, backgroundColor: "white" }}>
-        <PanGestureHandler onGestureEvent={handleTouchMove} onEnded={handleTouchEnd}>
-          <Canvas style={{ flex: 1 }}>
-            {paths.map((d, index) => (
-              <Path key={index} path={Skia.Path.MakeFromSVGString(`M${d}`)} color="black" style="stroke" strokeWidth={2} />
-            ))}
-            {currentPath && (
-              <Path path={Skia.Path.MakeFromSVGString(`M${currentPath}`)} color="black" style="stroke" strokeWidth={2} />
-            )}
-          </Canvas>
-        </PanGestureHandler>
-        <Button title="Clear" onPress={clearCanvas} />
-      </View>
-    </GestureHandlerRootView>
-  );
-};
-
-export default draw;
+const styles = StyleSheet.create({
+    controls: {
+        flexDirection: "row",
+        marginTop: 10,
+    },
+});
