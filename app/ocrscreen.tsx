@@ -11,6 +11,13 @@ import {
 import { Context, useEffect, useState } from "react";
 import * as FileSystem from "expo-file-system";
 import * as ImageManipulator from "expo-image-manipulator";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+import { GoogleGenAI } from "@google/genai";
+
+const ai = new GoogleGenAI({
+  apiKey: "AIzaSyDf6BiH0sOxi20haEoHkHESW9Rpt9Ol46g",
+});
 
 const compressImage = async (uri: string) => {
   console.log("Compressing image:", uri);
@@ -43,13 +50,13 @@ const convertImageToBase64 = async (uri: string) => {
 export default function OCRScreen() {
   const { imageUri }: { imageUri: any } = useLocalSearchParams();
   const [recognizedText, setRecognizedText] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [airesponse, setairesponse] = useState<string>();
 
   useEffect(() => {
     if (!imageUri) {
       setErrorMessage("No image provided");
-      setLoading(false);
       return;
     }
 
@@ -69,13 +76,29 @@ export default function OCRScreen() {
       }
 
       data.set("apikey", "K86324583088957");
+      data.set("OCREngine", "2");
 
       try {
         console.log("first");
         const response = await fetch(url, { method: "POST", body: data });
         const json = await response.json();
-        console.log(json);
+        setRecognizedText(json.ParsedResults[0].ParsedText);
+        console.log(json.ParsedResults[0].ParsedText);
+        setLoading(false);
+
+        async function g() {
+          const response = await ai.models.generateContent({
+            model: "gemini-2.0-flash",
+            contents: `${json.ParsedResults[0].ParsedText}`,
+          });
+          setairesponse(response.text);
+          console.log(response.text);
+        }
+
+        await g();
       } catch (error) {
+        setLoading(false);
+        setErrorMessage("Failed to recognize text");
         console.error(error);
         return { error: true };
       }
@@ -127,25 +150,41 @@ export default function OCRScreen() {
 
     // setLoading(false);
     // processImage();
-  }, []);
+  }, [imageUri]);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {imageUri ? (
-        <>
-          <Image source={{ uri: imageUri }} style={styles.image} />
-        </>
-      ) : (
-        <Text style={styles.errorText}>No image provided</Text>
-      )}
-      {false ? (
-        <ActivityIndicator size="large" color="blue" />
-      ) : errorMessage ? (
-        <Text style={styles.errorText}>{errorMessage}</Text>
-      ) : (
-        <Text style={styles.text}>{recognizedText}</Text>
-      )}
-    </ScrollView>
+    <SafeAreaView className="flex-1 bg-backgroundColor">
+      <ScrollView className="h-full">
+        <View style={styles.container} className="text-white">
+          {imageUri ? (
+            <>
+              <Image
+                source={{ uri: imageUri }}
+                style={styles.image}
+                resizeMode="contain"
+              />
+            </>
+          ) : (
+            <Text style={styles.errorText}>No image provided</Text>
+          )}
+        </View>
+        <View className="px-5">
+          {loading ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : errorMessage ? (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          ) : recognizedText ? (
+            <Text style={styles.text} className="text-slate-300">
+              {recognizedText}
+            </Text>
+          ) : (
+            <Text style={styles.text}>No text found</Text>
+          )}
+          <Text className="text-slate-300">{airesponse ? airesponse : ""}</Text>
+        </View>
+      </ScrollView>
+      <StatusBar style="dark" backgroundColor="#011121" />
+    </SafeAreaView>
   );
 }
 
