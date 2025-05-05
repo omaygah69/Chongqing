@@ -1,40 +1,37 @@
-import { StatusBar } from "expo-status-bar";
-import React, { useState, useRef } from "react";
-import { StyleSheet, View, Button } from "react-native";
-import ExpoDraw from "expo-draw";
+import React, { useRef } from 'react';
+import { View, StyleSheet } from 'react-native';
+import Signature from 'react-native-signature-canvas';
 
-export default function Draw() {
-    const [theColor, setColor] = useState("black");
-    const [theWidth, setWidth] = useState(5);
-    const undoRef = useRef(null);
-    const clearRef = useRef(null);
+export default function DrawingPage() {
+    const ref = useRef();
+    const handleOK = (signature) => {
+	console.log('Drawing saved as base64:', signature);
+    };
+    const handleClear = () => {
+	console.log('Canvas cleared');
+    };
 
     return (
-        <View className="flex-1 bg-backgroundColor items-center justify-center py-10">
-	    <ExpoDraw
-		className="w-full"
-                strokes={[]}
-                containerStyle={{ backgroundColor: "white" }}
-                rewind={(undo) => (undoRef.current = undo)}
-                clear={(clear) => (clearRef.current = clear)}
-                color={theColor}
-                strokeWidth={theWidth}
-                enabled={true}
-                onChangeStrokes={(strokes) => console.log(strokes)}
+	<View style={styles.container}>
+	    <Signature
+		ref={ref}
+		onOK={handleOK}
+		onClear={handleClear}
+		autoClear={false}
+		descriptionText="Draw anything here"
+		clearText="Clear"
+		confirmText="Save"
+		webStyle={`
+          .m-signature-pad--footer { display: none; margin: 0; }
+          body,html {
+            height: 100%;
+          }
+		`}
 	    />
-	    
-            <View style={styles.controls}>
-                <Button title="Undo" onPress={() => undoRef.current && undoRef.current()} />
-                <Button title="Clear" onPress={() => clearRef.current && clearRef.current()} />
-                <Button title="Change Color" onPress={() => setColor(theColor === "black" ? "red" : "black")} />
-            </View>
-        </View>
+	</View>
     );
 }
 
 const styles = StyleSheet.create({
-    controls: {
-        flexDirection: "row",
-        marginTop: 10,
-    },
+    container: { flex: 1 },
 });

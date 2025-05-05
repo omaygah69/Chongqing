@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { View, TouchableOpacity, StyleSheet, Image, Text } from "react-native";
 import { SafeAreaView, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
+import NavBar from "./navbar";
 import * as MediaLibrary from "expo-media-library";
 import { Feather } from "@expo/vector-icons";
 
@@ -70,6 +71,7 @@ export default function Gallery(){
 		    <Text className="text-2xl font-semibold">Get Albums</Text>
 		</TouchableOpacity>
 	    )}
+	    <NavBar />
 	</SafeAreaView>
     )
 }
