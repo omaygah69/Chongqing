@@ -6,8 +6,9 @@ import {
     StyleSheet,
     ScrollView,
     ActivityIndicator,
+    ImageSourcePropType,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { Context, useEffect, useState } from "react";
 import * as FileSystem from "expo-file-system";
 import * as ImageManipulator from "expo-image-manipulator";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,16 +16,19 @@ import { StatusBar } from "expo-status-bar";
 import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({
-    apiKey: "YOUR_GOOGLE_API_KEY", // replace this with an env variable for security in production
+    apiKey: "AIzaSyDf6BiH0sOxi20haEoHkHESW9Rpt9Ol46g",
 });
 
 const compressImage = async (uri: string) => {
+    console.log("Compressing image:", uri);
     try {
 	const { uri: resizedUri } = await ImageManipulator.manipulateAsync(
 	    uri,
-	    [{ resize: { width: 800 } }],
+	    [{ resize: { width: 800, height: 600 } }],
 	    { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
 	);
+
+	console.log("Resized image URI:", resizedUri);
 	return resizedUri;
     } catch (err) {
 	console.error("Error resizing image:", err);
@@ -33,9 +37,10 @@ const compressImage = async (uri: string) => {
 
 const convertImageToBase64 = async (uri: string) => {
     try {
-	return await FileSystem.readAsStringAsync(uri, {
+	const base64 = await FileSystem.readAsStringAsync(uri, {
 	    encoding: FileSystem.EncodingType.Base64,
 	});
+	return base64;
     } catch (error) {
 	console.error("Error converting image to Base64:", error);
 	return null;
@@ -43,143 +48,149 @@ const convertImageToBase64 = async (uri: string) => {
 };
 
 export default function OCRScreen() {
-    const { imageUri } = useLocalSearchParams();
+    const { imageUri }: { imageUri: any } = useLocalSearchParams();
     const [recognizedText, setRecognizedText] = useState<string | null>(null);
-    const [aiResponse, setAiResponse] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [airesponse, setairesponse] = useState<string>();
 
     useEffect(() => {
 	if (!imageUri) {
-	    setErrorMessage("No image provided.");
-	    setLoading(false);
+	    setErrorMessage("No image provided");
 	    return;
 	}
 
-	const runOCRAndAI = async () => {
+	async function OCR(uri: string) {
+	    const compressedImageUri = await compressImage(uri);
+	    if (!compressedImageUri) {
+		throw new Error("Compressed image URI is undefined");
+	    }
+	    const base64ImageUri = await convertImageToBase64(compressedImageUri);
+	    const url = "https://api.ocr.space/parse/image";
+	    let data = new FormData();
+
+	    if (base64ImageUri) {
+		data.set("base64Image", `data:image/jpeg;base64,${base64ImageUri}`);
+	    } else {
+		throw new Error("Failed to convert image to Base64");
+	    }
+
+	    data.set("apikey", "K86324583088957");
+	    data.set("OCREngine", "2");
+
 	    try {
-		const compressedUri = await compressImage(imageUri as string);
-		if (!compressedUri) throw new Error("Compression failed");
+		console.log("first");
+		const response = await fetch(url, { method: "POST", body: data });
+		const json = await response.json();
+		setRecognizedText(json.ParsedResults[0].ParsedText);
+		console.log(json.ParsedResults[0].ParsedText);
+		setLoading(false);
 
-		const base64 = await convertImageToBase64(compressedUri);
-		if (!base64) throw new Error("Failed to convert image to base64");
-
-		const formData = new FormData();
-		formData.append("base64Image", `data:image/jpeg;base64,${base64}`);
-		formData.append("apikey", "YOUR_OCR_SPACE_API_KEY");
-		formData.append("OCREngine", "2");
-
-		const res = await fetch("https://api.ocr.space/parse/image", {
-		    method: "POST",
-		    body: formData,
-		});
-
-		const json = await res.json();
-
-		if (!json.ParsedResults || !json.ParsedResults[0]?.ParsedText) {
-		    throw new Error("No text found");
+		async function g() {
+		    const response = await ai.models.generateContent({
+			model: "gemini-2.0-flash",
+			contents: `${json.ParsedResults[0].ParsedText}`,
+		    });
+		    setairesponse(response.text);
+		    console.log(response.text);
 		}
 
-		const parsedText = json.ParsedResults[0].ParsedText;
-		setRecognizedText(parsedText);
-
-		const aiResult = await ai.models.generateContent({
-		    model: "gemini-2.0-flash",
-		    contents: parsedText,
-		});
-
-		setAiResponse(aiResult.text);
-	    } catch (err: any) {
-		console.error(err);
-		setErrorMessage(err.message || "Something went wrong.");
-	    } finally {
+		await g();
+	    } catch (error) {
 		setLoading(false);
+		setErrorMessage("Failed to recognize text");
+		console.error(error);
+		return { error: true };
 	    }
-	};
+	}
+	OCR(imageUri);
 
-	runOCRAndAI();
+	// const processImage = async () => {
+	//   // Compress the image
+	//   const compressedImageUri = await compressImage(imageUri);
+
+	//   if (!compressedImageUri) {
+	//     setErrorMessage("Failed to compress image");
+	//     setLoading(false);
+	//     return;
+	//   }
+
+	//   console.log(imageUri);
+	//   const formData = new FormData();
+
+	//   const localUri = compressedImageUri;
+	//   const filename = localUri.split("/").pop();
+	//   const type = "jpg";
+
+	//   formData.append("apikey", "K86324583088957");
+	//   const file = {
+	//     uri: localUri,
+	//     name: filename,
+	//     type: type,
+	//   } as any;
+	//   console.log(formData);
+
+	//   formData.append("file", file);
+
+	//   try {
+	//     const response = await fetch("https://api.ocr.space/parse/image", {
+	//       method: "POST",
+	//       body: formData,
+	//       headers: {
+	//         "Content-Type": "multipart/form-data",
+	//       },
+	//     });
+
+	//     const data = await response.json();
+	//     console.log(data);
+	//   } catch (error) {
+	//     console.error(error);
+	//   }
+	// };
+
+	// setLoading(false);
+	// processImage();
     }, [imageUri]);
 
     return (
-	<SafeAreaView style={styles.screen}>
-	    <StatusBar style="light" />
-	    <ScrollView contentContainerStyle={styles.scrollContainer}>
-		<Text style={styles.title}>Image Preview</Text>
-		{imageUri ? (
-		    <Image
-			source={{ uri: imageUri as string }}
-			style={styles.image}
-			resizeMode="contain"
-		    />
-		) : (
-		    <Text style={styles.errorText}>No image selected.</Text>
-		)}
-
-		<View style={styles.section}>
-		    <Text style={styles.sectionTitle}>OCR Result</Text>
-		    {loading ? (
-			<ActivityIndicator size="large" color="#00f" />
-		    ) : errorMessage ? (
-			<Text style={styles.errorText}>{errorMessage}</Text>
+	<SafeAreaView className="flex-1 bg-backgroundColor">
+	    <ScrollView className="h-full">
+		<View style={styles.container} className="text-white">
+		    {imageUri ? (
+			<>
+			    <Image
+				source={{ uri: imageUri }}
+				style={styles.image}
+				resizeMode="contain"
+			    />
+			</>
 		    ) : (
-			<Text style={styles.resultText}>{recognizedText}</Text>
+			<Text style={styles.errorText}>No image provided</Text>
 		    )}
 		</View>
-
-		{aiResponse && (
-		    <View style={styles.section}>
-			<Text style={styles.sectionTitle}>Gemini Summary</Text>
-			<Text style={styles.resultText}>{aiResponse}</Text>
-		    </View>
-		)}
+		<View className="px-5">
+		    {loading ? (
+			<ActivityIndicator size="large" color="#0000ff" />
+		    ) : errorMessage ? (
+			<Text style={styles.errorText}>{errorMessage}</Text>
+		    ) : recognizedText ? (
+			<Text style={styles.text} className="text-slate-300">
+			    {recognizedText}
+			</Text>
+		    ) : (
+			<Text style={styles.text}>No text found</Text>
+		    )}
+		    <Text className="text-slate-300">{airesponse ? airesponse : ""}</Text>
+		</View>
 	    </ScrollView>
+	    <StatusBar style="dark" backgroundColor="#011121" />
 	</SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    screen: {
-	flex: 1,
-	backgroundColor: "#0e0e11",
-    },
-    scrollContainer: {
-	padding: 20,
-	alignItems: "center",
-    },
-    title: {
-	fontSize: 22,
-	fontWeight: "bold",
-	color: "#fff",
-	marginBottom: 10,
-    },
-    image: {
-	width: "100%",
-	height: 250,
-	borderRadius: 8,
-	marginBottom: 20,
-    },
-    section: {
-	width: "100%",
-	marginTop: 20,
-    },
-    sectionTitle: {
-	fontSize: 18,
-	fontWeight: "600",
-	color: "#f1f1f1",
-	marginBottom: 8,
-    },
-    resultText: {
-	fontSize: 16,
-	lineHeight: 22,
-	color: "#d0d0d0",
-	backgroundColor: "#1a1a1d",
-	padding: 12,
-	borderRadius: 6,
-    },
-    errorText: {
-	color: "red",
-	textAlign: "center",
-	fontSize: 16,
-	marginTop: 10,
-    },
+    container: { flex: 1, alignItems: "center", padding: 20 },
+    image: { width: 300, height: 300, marginBottom: 20 },
+    text: { fontSize: 16, textAlign: "center" },
+    errorText: { fontSize: 18, color: "red", textAlign: "center" },
 });
