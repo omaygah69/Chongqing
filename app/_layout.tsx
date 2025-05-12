@@ -17,6 +17,7 @@ export default function RootLayout() {
 		<Stack.Screen name="gallery" options={{ headerShown: false }} />
 		<Stack.Screen name="ocrscreen" options={{ headerShown: false }} />
 		<Stack.Screen name="draw" options={{ headerShown: false }} />
+		<Stack.Screen name="wiki" options={{ headerShown: false }} />
 	    </Stack>
 	</>
     );

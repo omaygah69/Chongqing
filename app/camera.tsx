@@ -84,7 +84,7 @@ export default function Camera() {
 			<View className="flex-1 items-center justify-end">
 			    <TouchableOpacity
 				className=""
-				onPress={() => router.push("/mainpage")}
+				onPress={() => router.back()}
 			    >
 				<Entypo name="back" color="#ffffff" size={50} />
 			    </TouchableOpacity>

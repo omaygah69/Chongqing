@@ -19,14 +19,14 @@ export default function MainPage() {
     return (
 	<SafeAreaView className="flex-1 bg-backgroundColor">
 	    <View className="absolute mt-9 top-0 left-0 right-0 bg-[#020528] flex-row justify-between items-center px-5 pt-6 z-10">
-		<Text className="text-[#ffe059] text-[30px] font-regular font-[MadeCarvingSoft-Regular]">
+		<Text className="text-[#ffe059] text-[25px] font-regular font-[MadeCarvingSoft-Regular]">
 		    GRAPHPIX
 		</Text>
 
 		<View className="flex-row">
-		    <TouchableOpacity className="ml-4">
+		    {/* <TouchableOpacity className="ml-4">
 			<Ionicons name="search" size={30} color="#ffe059" />
-		    </TouchableOpacity>
+			</TouchableOpacity> */}
 		    <SettingsMenu />
 		</View>
 	    </View>

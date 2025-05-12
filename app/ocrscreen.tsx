@@ -15,7 +15,7 @@ import { StatusBar } from "expo-status-bar";
 import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({
-    apiKey: "AIzaSyDf6BiH0sOxi20haEoHkHESW9Rpt9Ol46g",
+    apiKey: "AIzaSyBcAmSgDdezOK2VjtyVIgHaClKryVfAySc",
 });
 
 const compressImage = async (uri: string): Promise<string | null> => {
